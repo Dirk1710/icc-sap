@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Solace IPC for C SDK — SAP Store demo (animatic preview)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --deep-blue: #093B5F;
+  --dark-blue: #03213B;
+  --classic-green: #00C895;
+  --bright-green: #ABFF88;
+  --spring-green: #C7FFCB;
+  --sky-blue: #C2F7FF;
+  --sunrise: #FFF7C2;
+  --orange: #FCA829;
+  --gray-12: #F4F4F4;
+  --gray-14: #D6D6D6;
+  --text-dark: #0A1B2A;
+  --sap-blue: #1B6AC9;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--dark-blue);
+  color: var(--gray-12);
+  font-family: "Segoe UI", "Figtree", system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+.brand {
+  font-family: "Consolas", "Liberation Mono", monospace;
+  color: var(--classic-green);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+.subtle { color: #8da3b8; font-size: 12px; }
+
+/* --- 16:9 stage --- */
+.stage-wrap {
+  position: relative;
+  width: 100%;
+  background: var(--deep-blue);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+.scene {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 700ms ease;
+  pointer-events: none;
+  padding: 40px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.scene.active { opacity: 1; pointer-events: auto; }
+
+/* Generic typography */
+.eyebrow {
+  font-family: "Consolas", "Liberation Mono", monospace;
+  color: var(--classic-green);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+}
+h1.title {
+  margin: 8px 0 0 0;
+  font-family: "Calibri Light", "Figtree", system-ui, sans-serif;
+  font-weight: 300;
+  color: white;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+h2.subtitle {
+  font-family: "Calibri Light", "Figtree", system-ui, sans-serif;
+  font-weight: 300;
+  color: var(--bright-green);
+  font-size: 24px;
+  margin: 8px 0 0 0;
+}
+
+/* ===== Scene 1 — Hook ===== */
+.scene-1 {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0,200,149,0.18), transparent 55%),
+    var(--dark-blue);
+  text-align: center;
+  align-items: center;
+}
+.scene-1 .chip-art {
+  width: 140px; height: 140px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #0a3b5a, #052036);
+  border: 2px solid rgba(171,255,136,0.25);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  animation: chipPulse 2.4s ease-in-out infinite;
+}
+.scene-1 .chip-art::after {
+  content: "CPU";
+  font-family: "Consolas", "Liberation Mono", monospace;
+  color: var(--bright-green);
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  font-size: 22px;
+}
+@keyframes chipPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(171,255,136,0.4), inset 0 0 30px rgba(0,200,149,0.2); }
+  50%      { box-shadow: 0 0 30px 6px rgba(171,255,136,0.0), inset 0 0 60px rgba(0,200,149,0.45); }
+}
+.scene-1 .lower-third {
+  position: absolute;
+  left: 56px; right: 56px; bottom: 56px;
+  text-align: left;
+}
+
+/* ===== Scene 2 — Problem ===== */
+.scene-2 { background: var(--deep-blue); }
+.scene-2 .board {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 28px;
+  align-items: center;
+}
+.scene-2 .apphost {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.box-app {
+  background: white; color: var(--deep-blue);
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.box-app .pill {
+  background: var(--deep-blue); color: var(--bright-green);
+  font-family: "Consolas", "Liberation Mono", monospace;
+  font-size: 10px; padding: 4px 8px; border-radius: 4px; letter-spacing: 0.08em;
+}
+.broker {
+  background: var(--deep-blue);
+  border: 2px solid var(--classic-green);
+  border-radius: 50%;
+  width: 130px; height: 130px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; text-align: center; font-size: 14px;
+  line-height: 1.15;
+  position: relative;
+}
+.broker small {
+  position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+  color: var(--bright-green); font-family: "Consolas", monospace; font-size: 11px; letter-spacing: 0.15em;
+}
+.arrow-loop {
+  position: absolute;
+  pointer-events: none;
+}
+.latency-counter {
+  margin-top: 22px;
+  font-family: "Consolas", "Liberation Mono", monospace;
+  color: white;
+  font-size: 22px;
+  display: flex; align-items: center; gap: 12px;
+}
+.latency-value {
+  display: inline-block;
+  background: rgba(252,168,41,0.15);
+  border: 1px solid var(--orange);
+  color: var(--orange);
+  padding: 4px 14px;
+  border-radius: 6px;
+  min-width: 110px; text-align: center;
+  font-weight: 700;
+}
+.latency-flash { animation: flashRed 1.2s ease-out 1; }
+@keyframes flashRed {
+  0% { background: rgba(252,168,41,0.7); }
+  100% { background: rgba(252,168,41,0.15); }
+}
+.dashed-arrow {
+  width: 100%; height: 2px;
+  background: repeating-linear-gradient(to right, rgba(255,255,255,0.35) 0 8px, transparent 8px 14px);
+  position: relative;
+}
+.dashed-arrow.up::before, .dashed-arrow.down::after {
+  content: "";
+  position: absolute;
+  width: 0; height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+}
+.dashed-arrow.up::before { top: -6px; left: 50%; border-bottom: 7px solid rgba(255,255,255,0.45); }
+.dashed-arrow.down::after { bottom: -6px; left: 50%; border-top: 7px solid rgba(255,255,255,0.45); }
+
+/* ===== Scene 3 — Fix ===== */
+.scene-3 { background: var(--deep-blue); }
+.scene-3 .shm-pipe {
+  margin: 24px auto 12px;
+  height: 28px;
+  background: linear-gradient(90deg, var(--bright-green), var(--classic-green));
+  border-radius: 14px;
+  width: 70%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: "Consolas", monospace; color: var(--deep-blue);
+  font-weight: 700; font-size: 13px; letter-spacing: 0.12em;
+  box-shadow: 0 0 22px rgba(171,255,136,0.45);
+  animation: pipeIn 1.6s ease-out;
+}
+@keyframes pipeIn {
+  from { transform: scaleX(0.02); opacity: 0; }
+  to   { transform: scaleX(1);     opacity: 1; }
+}
+.scene-3 .latency-stack {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 8px;
+}
+.scene-3 .big-number {
+  font-family: "Consolas", monospace;
+  font-size: 70px;
+  font-weight: 700;
+  color: var(--bright-green);
+  letter-spacing: -0.02em;
+}
+.scene-3 .strike {
+  color: rgba(255,255,255,0.45);
+  text-decoration: line-through;
+  font-family: "Consolas", monospace;
+  font-size: 22px;
+}
+.overlay-tag {
+  margin-top: 18px;
+  display: inline-block;
+  border: 1px solid var(--bright-green);
+  color: var(--bright-green);
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-family: "Calibri Light", "Figtree", sans-serif;
+  font-size: 20px; letter-spacing: 0.04em;
+  animation: fadeUp 1.2s ease 0.6s both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Scene 4 / 5 / 6 — Terminal scenes ===== */
+.terminal-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+}
+.term {
+  background: #04162a;
+  border: 1px solid rgba(171,255,136,0.18);
+  border-radius: 8px;
+  font-family: "Consolas", "Liberation Mono", monospace;
+  font-size: 11.5px;
+  color: #d7e6f2;
+  padding: 10px 14px;
+  overflow: hidden;
+  position: relative;
+}
+.term .tab {
+  position: absolute; top: -10px; left: 14px;
+  background: var(--deep-blue);
+  color: var(--bright-green);
+  padding: 2px 10px; border-radius: 4px;
+  font-size: 10px; letter-spacing: 0.1em;
+}
+.term .line { white-space: pre; line-height: 1.55; }
+.term .cmt { color: #6f8aa4; }
+.term .key { color: var(--bright-green); }
+.term .val { color: var(--sky-blue); }
+.term .ok  { color: var(--classic-green); font-weight: 700; }
+.term .warn { color: var(--orange); }
+.term .topic { color: var(--bright-green); }
+
+.aem-pane {
+  background: white;
+  color: var(--deep-blue);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 14px 16px;
+  font-size: 12px;
+  position: relative;
+}
+.aem-pane .tab {
+  position: absolute; top: -10px; left: 14px;
+  background: var(--sap-blue); color: white;
+  padding: 2px 10px; border-radius: 4px;
+  font-size: 10px; letter-spacing: 0.1em;
+}
+.aem-pane h4 { margin: 4px 0 8px 0; font-size: 14px; color: var(--sap-blue); }
+.aem-pane .stat {
+  font-family: "Consolas", monospace;
+  font-size: 32px; font-weight: 700; color: var(--classic-green);
+}
+.aem-pane .stat-label { font-size: 10px; color: #5a6b80; letter-spacing: 0.12em; text-transform: uppercase; }
+.aem-pane .topic-row {
+  display: flex; justify-content: space-between;
+  padding: 4px 0; border-bottom: 1px dashed #d6d6d6;
+  font-family: "Consolas", monospace; font-size: 11px;
+}
+
+/* Histogram (scene 5) */
+.hist {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 60px; margin-top: 8px;
+}
+.hist .bar {
+  flex: 1; background: var(--classic-green);
+  border-radius: 2px 2px 0 0;
+  animation: barWiggle 0.8s ease-in-out infinite alternate;
+}
+.hist .bar.p50 { background: var(--bright-green); }
+.hist .bar.p99 { background: var(--orange); }
+@keyframes barWiggle {
+  from { height: 30%; }
+  to   { height: 95%; }
+}
+.hist-legend { font-size: 10px; color: #8da3b8; display: flex; gap: 12px; margin-top: 6px; }
+.hist-legend .dot { width: 8px; height: 8px; display: inline-block; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+
+/* ===== Scene 7 — Land in SAP ===== */
+.scene-7 { background: white; color: var(--text-dark); }
+.scene-7 h1.title { color: var(--deep-blue); }
+.scene-7 h2.subtitle { color: var(--sap-blue); }
+.scene-7 .sap-ui {
+  margin-top: 18px;
+  background: #f7f9fc;
+  border: 1px solid #d6e2ee;
+  border-radius: 10px;
+  padding: 22px 26px;
+}
+.scene-7 .sap-ui .row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #c8d4e2;
+  align-items: center;
+  font-family: "Consolas", monospace;
+  font-size: 13px;
+}
+.scene-7 .sap-ui .row:last-child { border-bottom: none; }
+.scene-7 .sap-ui .row .topic { color: var(--sap-blue); font-weight: 700; }
+.scene-7 .sap-ui .row .status { color: var(--classic-green); font-weight: 700; }
+.scene-7 .ribbon {
+  margin-top: 14px;
+  background: var(--deep-blue); color: white;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-family: "Calibri Light", sans-serif;
+  font-size: 22px;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+.scene-7 .ribbon b { color: var(--bright-green); font-weight: 700; }
+
+/* ===== Scene 8 — Close ===== */
+.scene-8 {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0,200,149,0.18), transparent 60%),
+    var(--dark-blue);
+  text-align: center; align-items: center; justify-content: center;
+}
+.scene-8 .logo {
+  font-family: "Calibri Light", "Figtree", sans-serif;
+  font-weight: 300;
+  color: white;
+  font-size: 90px;
+  letter-spacing: -0.02em;
+}
+.scene-8 .logo b { color: var(--classic-green); font-weight: 700; }
+.scene-8 .end-line {
+  margin-top: 24px;
+  font-size: 18px;
+  font-family: "Calibri Light", sans-serif;
+  color: var(--bright-green);
+}
+.scene-8 .end-urls {
+  margin-top: 28px;
+  font-family: "Consolas", monospace;
+  font-size: 14px;
+  color: var(--gray-12);
+  letter-spacing: 0.1em;
+}
+
+/* Diagram cutaways (used as full-frame in some scenes) */
+.full-diagram {
+  width: 100%; height: 100%; object-fit: contain;
+  background: white;
+}
+
+/* ===== HUD: captions, progress bar, controls ===== */
+.captions {
+  position: absolute;
+  left: 0; right: 0; bottom: 48px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+}
+.captions span {
+  display: inline-block;
+  background: rgba(3,33,59,0.85);
+  color: white;
+  font-size: 18px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  max-width: 78%;
+  line-height: 1.35;
+  font-family: "Segoe UI", "Figtree", sans-serif;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.scene-7 .captions span,
+.scene-8 .captions span {
+  background: rgba(3,33,59,0.85);
+}
+
+.scene-meta {
+  position: absolute;
+  top: 14px; right: 18px;
+  background: rgba(3,33,59,0.55);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white;
+  font-family: "Consolas", monospace;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  z-index: 6;
+}
+.scene-7 .scene-meta { background: rgba(27,106,201,0.85); border-color: rgba(255,255,255,0.25); }
+
+.progress {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  z-index: 6;
+}
+.progress > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--bright-green), var(--classic-green));
+  width: 0%;
+  transition: width 200ms linear;
+}
+
+/* ===== Player chrome ===== */
+.player-bar {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.btn {
+  background: var(--classic-green);
+  color: var(--deep-blue);
+  border: none;
+  padding: 8px 18px;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+}
+.btn.secondary {
+  background: transparent;
+  color: var(--bright-green);
+  border: 1px solid var(--bright-green);
+}
+.btn:hover { filter: brightness(1.1); }
+.timecode {
+  font-family: "Consolas", monospace;
+  color: var(--gray-12);
+  font-size: 13px;
+  margin-left: auto;
+}
+.scene-list {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+.chip {
+  background: rgba(255,255,255,0.06);
+  color: var(--gray-12);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.2;
+}
+.chip strong { display: block; color: var(--bright-green); font-size: 12px; }
+.chip.current { background: rgba(0,200,149,0.18); border-color: var(--classic-green); }
+
+footer.info {
+  margin-top: 18px;
+  color: #8da3b8;
+  font-size: 12px;
+  line-height: 1.5;
+}
+footer.info a { color: var(--bright-green); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="brand">SOLACE · SAP STORE DEMO · ANIMATIC PREVIEW</div>
+      <div class="subtle">Inter-Process Communications (IPC) capabilities for the Solace C SDK — visual reference for the video production team</div>
+    </div>
+    <div class="subtle">3:25 runtime · 16:9 · 1× / 2×</div>
+  </div>
+
+  <div class="stage-wrap" id="stage">
+    <!-- Scene 1 -->
+    <div class="scene scene-1" data-scene="1">
+      <div class="eyebrow">SCENE 1 · HOOK</div>
+      <div class="chip-art" style="margin: 24px auto 16px;"></div>
+      <h1 class="title" style="text-align:center;">Inter-Process Communications<br>for the Solace C SDK</h1>
+      <h2 class="subtitle" style="text-align:center;">Nanosecond-class in-host messaging for SAP Advanced Event Mesh</h2>
+      <div class="scene-meta">01 / 08 · 0:00–0:18</div>
+    </div>
+
+    <!-- Scene 2 -->
+    <div class="scene scene-2" data-scene="2">
+      <div class="eyebrow">SCENE 2 · THE PROBLEM</div>
+      <h1 class="title">Co-resident apps still round-trip through a broker.</h1>
+      <div class="board">
+        <div class="apphost">
+          <div class="box-app">Pricing Engine <span class="pill">C SDK</span></div>
+          <div class="dashed-arrow up"></div>
+          <div class="box-app">Order Manager <span class="pill">C SDK</span></div>
+        </div>
+        <div>
+          <div class="broker"><small>BROKER ROUND-TRIP</small>Event Broker</div>
+        </div>
+        <div>
+          <div class="latency-counter">
+            Avg. round-trip <span class="latency-value latency-flash" id="lat2">~120 μs</span>
+          </div>
+          <div style="font-size: 13px; color: #b9c8d9; margin-top: 8px;">… on every intra-host hop.</div>
+        </div>
+      </div>
+      <div class="scene-meta">02 / 08 · 0:18–0:38</div>
+    </div>
+
+    <!-- Scene 3 -->
+    <div class="scene scene-3" data-scene="3">
+      <div class="eyebrow">SCENE 3 · THE FIX</div>
+      <h1 class="title">Same Solace C SDK. <span style="color:var(--bright-green)">New transport.</span></h1>
+      <div class="shm-pipe">SHARED-MEMORY IPC CHANNEL  //  ZERO-COPY</div>
+      <div class="latency-stack">
+        <div class="strike">~120 μs</div>
+        <div class="big-number">~0.7 μs</div>
+        <div class="overlay-tag">Same API · Same topics · No code rewrite</div>
+      </div>
+      <div class="scene-meta">03 / 08 · 0:38–1:02</div>
+    </div>
+
+    <!-- Scene 4 -->
+    <div class="scene scene-4" data-scene="4">
+      <div class="eyebrow">SCENE 4 · LIVE DEMO SETUP</div>
+      <h1 class="title" style="font-size:38px;">Two C apps. One host. <span style="color:var(--bright-green)">shm:</span> prefix.</h1>
+      <div class="terminal-grid">
+        <div class="term">
+          <div class="tab">pricing-engine</div>
+          <div class="line"><span class="cmt"># build with Solace C SDK + IPC add-on</span></div>
+          <div class="line">$ ./pricing_engine \</div>
+          <div class="line">    <span class="key">--host</span>     <span class="val">shm:127.0.0.1</span> \</div>
+          <div class="line">    <span class="key">--multipoint</span> on \</div>
+          <div class="line">    <span class="key">--reapply-subs</span> on</div>
+          <div class="line"><span class="ok">[OK]</span> session up · context bound to CPU 3</div>
+        </div>
+        <div class="term">
+          <div class="tab">order-manager</div>
+          <div class="line">$ ./order_manager \</div>
+          <div class="line">    <span class="key">--host</span>     <span class="val">shm:127.0.0.1</span> \</div>
+          <div class="line">    <span class="key">--subscribe</span> <span class="topic">orders/eu/&gt;</span></div>
+          <div class="line"><span class="ok">[OK]</span> subscribed · waiting on shared memory</div>
+        </div>
+        <div class="term">
+          <div class="tab">solgateway</div>
+          <div class="line"><span class="cmt"># will be started in Scene 6</span></div>
+          <div class="line">$ ./SolGateway --help</div>
+          <div class="line">  --host    tcps://broker.aem.cloud.sap:55443</div>
+          <div class="line">  --vpn     msgvpn-aem-demo</div>
+          <div class="line">  --no-local</div>
+        </div>
+        <div class="aem-pane">
+          <div class="tab">SAP ADVANCED EVENT MESH MANAGER</div>
+          <h4>broker.aem.cloud.sap</h4>
+          <div class="topic-row"><span>orders/eu/&gt;</span><span>0 msg/s</span></div>
+          <div class="topic-row"><span>connections</span><span>0</span></div>
+          <div class="stat-label">awaiting bridge</div>
+          <div class="stat">0</div>
+        </div>
+      </div>
+      <div class="scene-meta">04 / 08 · 1:02–1:30</div>
+    </div>
+
+    <!-- Scene 5 -->
+    <div class="scene scene-5 scene-4" data-scene="5">
+      <div class="eyebrow">SCENE 5 · IPC PUB/SUB IN FLIGHT</div>
+      <h1 class="title" style="font-size:38px;">Sub-microsecond p50. <span style="color:var(--bright-green)">No NIC tricks.</span></h1>
+      <div class="terminal-grid">
+        <div class="term">
+          <div class="tab">pricing-engine</div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/MSFT  <span class="cmt">seq=1003421</span></div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/AAPL  <span class="cmt">seq=1003422</span></div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/SAP   <span class="cmt">seq=1003423</span></div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/MSFT  <span class="cmt">seq=1003424</span></div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/AAPL  <span class="cmt">seq=1003425</span></div>
+          <div class="line"><span class="warn">rate</span> 1,041,000 msg/s · 100 B payload</div>
+        </div>
+        <div class="term">
+          <div class="tab">order-manager</div>
+          <div class="line"><span class="ok">[recv]</span> orders/eu/MSFT  <span class="cmt">+0.6 μs</span></div>
+          <div class="line"><span class="ok">[recv]</span> orders/eu/AAPL  <span class="cmt">+0.7 μs</span></div>
+          <div class="line"><span class="ok">[recv]</span> orders/eu/SAP   <span class="cmt">+0.6 μs</span></div>
+          <div class="line"><span class="ok">[recv]</span> orders/eu/MSFT  <span class="cmt">+0.8 μs</span></div>
+          <div class="line"><span class="ok">[recv]</span> orders/eu/AAPL  <span class="cmt">+0.7 μs</span></div>
+          <div class="line"><span class="warn">p50</span> 0.6 μs  <span class="warn">p99</span> 1.1 μs</div>
+        </div>
+        <div class="term" style="grid-column: span 2;">
+          <div class="tab">latency histogram (end-to-end, application-to-application)</div>
+          <div class="hist" id="hist"></div>
+          <div class="hist-legend">
+            <span><span class="dot" style="background:var(--bright-green)"></span>p50 = 0.6 μs</span>
+            <span><span class="dot" style="background:var(--classic-green)"></span>p90 = 0.8 μs</span>
+            <span><span class="dot" style="background:var(--orange)"></span>p99 = 1.1 μs</span>
+          </div>
+        </div>
+      </div>
+      <div class="scene-meta">05 / 08 · 1:30–2:05</div>
+    </div>
+
+    <!-- Scene 6 -->
+    <div class="scene scene-6 scene-4" data-scene="6">
+      <div class="eyebrow">SCENE 6 · BRIDGE TO SAP AEM</div>
+      <h1 class="title" style="font-size:38px;">Light up SolGateway. <span style="color:var(--bright-green)">Mesh-wide.</span></h1>
+      <div class="terminal-grid">
+        <div class="term" style="grid-column: span 1;">
+          <div class="tab">solgateway</div>
+          <div class="line">$ ./SolGateway \</div>
+          <div class="line">    <span class="key">--host</span>    <span class="val">tcps://broker.aem.cloud.sap:55443</span> \</div>
+          <div class="line">    <span class="key">--vpn</span>     <span class="val">msgvpn-aem-demo</span> \</div>
+          <div class="line">    <span class="key">--username</span> demo</div>
+          <div class="line"><span class="ok">[OK]</span> TCP/TLS connection established</div>
+          <div class="line"><span class="ok">[OK]</span> Connected to SAP Advanced Event Mesh</div>
+          <div class="line"><span class="ok">[OK]</span> Bridging IPC peers → broker</div>
+          <div class="line"><span class="ok">[OK]</span> Forwarding subscription <span class="topic">orders/eu/&gt;</span></div>
+        </div>
+        <div class="term">
+          <div class="tab">pricing-engine (still publishing)</div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/MSFT  <span class="cmt">seq=1041552</span></div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/AAPL  <span class="cmt">seq=1041553</span></div>
+          <div class="line"><span class="ok">[publish]</span> orders/eu/SAP   <span class="cmt">seq=1041554</span></div>
+          <div class="line"><span class="warn">local p50 unchanged</span> 0.6 μs</div>
+          <div class="line"><span class="cmt"># no code change · no restart</span></div>
+        </div>
+        <div class="aem-pane" style="grid-column: span 2;">
+          <div class="tab">SAP ADVANCED EVENT MESH MANAGER · broker.aem.cloud.sap</div>
+          <div style="display:flex; align-items:center; justify-content: space-between; gap: 24px;">
+            <div>
+              <div class="stat-label">Topic</div>
+              <div class="topic-row" style="border:none; font-size:14px;"><span class="topic" style="color:var(--sap-blue)">orders/eu/&gt;</span></div>
+              <div class="stat-label" style="margin-top:8px;">Active connections</div>
+              <div style="font-family: 'Consolas', monospace; font-size: 20px; font-weight: 700; color: var(--sap-blue);">1 · SolGateway-1</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="stat-label">Message rate</div>
+              <div class="stat" id="aemRate">3,420</div>
+              <div class="stat-label">msg / sec (and climbing)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="scene-meta">06 / 08 · 2:05–2:38</div>
+    </div>
+
+    <!-- Scene 7 -->
+    <div class="scene scene-7" data-scene="7">
+      <div class="eyebrow">SCENE 7 · LAND IN SAP</div>
+      <h1 class="title">Events arrive in SAP. <span style="color:var(--sap-blue)">No re-write.</span></h1>
+      <h2 class="subtitle">SAP S/4HANA Event Manager · subscriber on orders/eu/&gt;</h2>
+      <div class="sap-ui">
+        <div class="row" style="font-weight:700; border-bottom: 2px solid #c8d4e2;">
+          <span>Event</span><span>Source</span><span>Received</span><span>Status</span>
+        </div>
+        <div class="row"><span class="topic">orders/eu/MSFT</span><span>edge-host-fra-01</span><span>12:04:18.401</span><span class="status">ACCEPTED</span></div>
+        <div class="row"><span class="topic">orders/eu/AAPL</span><span>edge-host-fra-01</span><span>12:04:18.412</span><span class="status">ACCEPTED</span></div>
+        <div class="row"><span class="topic">orders/eu/SAP </span><span>edge-host-fra-01</span><span>12:04:18.418</span><span class="status">ACCEPTED</span></div>
+        <div class="row"><span class="topic">orders/eu/MSFT</span><span>edge-host-fra-01</span><span>12:04:18.421</span><span class="status">ACCEPTED</span></div>
+      </div>
+      <div class="ribbon"><b>One API.</b> Two latency profiles. <b>Zero rewrite.</b></div>
+      <div class="scene-meta">07 / 08 · 2:38–3:05</div>
+    </div>
+
+    <!-- Scene 8 -->
+    <div class="scene scene-8" data-scene="8">
+      <div class="eyebrow">SCENE 8 · CLOSE</div>
+      <div class="logo"><b>Solace</b></div>
+      <div class="end-line">IPC capabilities for the Solace C SDK</div>
+      <div class="end-urls">
+        store.sap.com  ·  docs.solace.com/API/IPC/IPC-Guide.htm
+      </div>
+      <div class="scene-meta">08 / 08 · 3:05–3:25</div>
+    </div>
+
+    <!-- HUD overlays -->
+    <div class="captions" id="captions"><span id="captionText"></span></div>
+    <div class="progress"><div id="progressFill"></div></div>
+  </div>
+
+  <div class="player-bar">
+    <button class="btn" id="playBtn">▶ Play</button>
+    <button class="btn secondary" id="restartBtn">⟲ Restart</button>
+    <button class="btn secondary" id="speedBtn">1×</button>
+    <button class="btn secondary" id="voiceBtn">🔊 Voice on</button>
+    <select class="btn secondary" id="voicePick" style="padding:8px 10px; cursor:pointer;"></select>
+    <div class="timecode" id="timecode">0:00 / 3:25</div>
+  </div>
+
+  <div class="scene-list" id="sceneList"></div>
+
+  <footer class="info">
+    <strong>About this animatic:</strong> this is a previz preview of the demo video described in
+    <em>Solace_IPC_SAP_Store_Demo_Storyboard.docx</em>. It auto-plays through all 8 scenes at the storyboard's timecodes,
+    with the voiceover script shown as captions. Hand this file to your video team alongside the storyboard doc.<br>
+    <strong>Voiceover:</strong> captions are also spoken aloud via your browser's built-in speech synthesis (Web Speech API).
+    Use the <em>Voice on / off</em> toggle to mute, or pick a different system voice from the dropdown.
+    Browsers block audio until the first user gesture, so audio only starts after you click <em>▶ Play</em>.
+    Voice quality varies by OS and browser — this is intentional previz; the final voiceover will be recorded by a human narrator.<br>
+    All product names belong to their respective owners. © 2026 Solace Corporation.
+  </footer>
+</div>
+
+<script>
+// --- Scene table: id, label, start (s), end (s), captions [{at, text}] ---
+const SCENES = [
+  { id: 1, label: "Hook",          start: 0,   end: 18,
+    captions: [
+      { at: 0,  text: "Modern SAP landscapes run on event-driven architecture." },
+      { at: 6,  text: "SAP Advanced Event Mesh is the backbone." },
+      { at: 11, text: "But what happens when two apps need to talk in nanoseconds, without leaving the mesh?" },
+    ]},
+  { id: 2, label: "Problem",       start: 18,  end: 38,
+    captions: [
+      { at: 18, text: "Today, co-resident apps round-trip through a broker just to exchange a message." },
+      { at: 28, text: "That burns latency, bandwidth, and broker CPU." },
+      { at: 33, text: "For trading, edge, or real-time SAP S/4HANA, it's a tax you can't afford." },
+    ]},
+  { id: 3, label: "The fix",       start: 38,  end: 62,
+    captions: [
+      { at: 38, text: "Solace IPC switches co-resident peers from TCP to a zero-copy shared-memory channel — automatically." },
+      { at: 49, text: "Sub-700-nanosecond average latency. Over 1M msg/sec per core." },
+      { at: 56, text: "Same API you already use for SAP Advanced Event Mesh." },
+    ]},
+  { id: 4, label: "Setup",         start: 62,  end: 90,
+    captions: [
+      { at: 62, text: "Two C apps on one host — a pricing engine and an order manager — using the Solace C SDK + IPC." },
+      { at: 74, text: "To turn on shared memory, you just prefix the host: shm:" },
+      { at: 83, text: "The SDK does the rest." },
+    ]},
+  { id: 5, label: "Pub/sub",       start: 90,  end: 125,
+    captions: [
+      { at: 90,  text: "Start the subscriber, then the publisher. Messages flow over shared memory." },
+      { at: 101, text: "Latency on the right is end-to-end, application-to-application." },
+      { at: 110, text: "Sub-microsecond p50. Low-microsecond p99. Commodity hardware, no kernel-bypass NICs." },
+    ]},
+  { id: 6, label: "Bridge to AEM", start: 125, end: 158,
+    captions: [
+      { at: 125, text: "Now we light up SolGateway — the bridge to the broker." },
+      { at: 134, text: "No code changes in either C application." },
+      { at: 142, text: "Local events appear on SAP Advanced Event Mesh — mesh-wide." },
+    ]},
+  { id: 7, label: "Land in SAP",   start: 158, end: 185,
+    captions: [
+      { at: 158, text: "Same events land in SAP S/4HANA, SAP BTP, or any downstream consumer." },
+      { at: 169, text: "Exactly as if they had been published directly to the broker." },
+      { at: 177, text: "Nanoseconds on the host. Milliseconds across the mesh. One programming model." },
+    ]},
+  { id: 8, label: "Close",         start: 185, end: 205,
+    captions: [
+      { at: 185, text: "Inter-Process Communications for the Solace C SDK." },
+      { at: 193, text: "Find us on the SAP Store. Learn more in the Solace developer documentation." },
+    ]},
+];
+const TOTAL = 205; // 3:25
+
+const stage = document.getElementById("stage");
+const captionText = document.getElementById("captionText");
+const progressFill = document.getElementById("progressFill");
+const timecode = document.getElementById("timecode");
+const playBtn = document.getElementById("playBtn");
+const restartBtn = document.getElementById("restartBtn");
+const speedBtn = document.getElementById("speedBtn");
+const voiceBtn = document.getElementById("voiceBtn");
+const voicePick = document.getElementById("voicePick");
+const sceneList = document.getElementById("sceneList");
+
+// Build histogram bars for scene 5
+const hist = document.getElementById("hist");
+if (hist) {
+  for (let i = 0; i < 40; i++) {
+    const bar = document.createElement("div");
+    const klass = i === 18 ? "bar p50" : (i === 36 ? "bar p99" : "bar");
+    bar.className = klass;
+    bar.style.animationDelay = (Math.random() * 0.8) + "s";
+    bar.style.animationDuration = (0.6 + Math.random() * 0.6) + "s";
+    hist.appendChild(bar);
+  }
+}
+
+// Build scene chips
+SCENES.forEach((s, i) => {
+  const c = document.createElement("div");
+  c.className = "chip";
+  c.dataset.scene = s.id;
+  c.innerHTML = '<strong>' + s.id + '</strong>' + s.label + '<br><span style="opacity:.65">' + fmt(s.start) + '</span>';
+  c.addEventListener("click", () => seek(s.start));
+  sceneList.appendChild(c);
+});
+
+function fmt(t) {
+  const m = Math.floor(t / 60), s = Math.floor(t % 60);
+  return m + ":" + String(s).padStart(2, "0");
+}
+
+let elapsed = 0;
+let playing = false;
+let speed = 1;
+let lastTick = 0;
+
+// --- Voiceover (Web Speech API) ---
+const tts = window.speechSynthesis || null;
+let voiceEnabled = !!tts;
+let chosenVoice = null;
+let lastSpokenCaption = "";
+
+if (!tts) {
+  voiceBtn.textContent = "🔇 Voice n/a";
+  voiceBtn.disabled = true;
+  voicePick.disabled = true;
+}
+
+function loadVoices() {
+  if (!tts) return;
+  const voices = tts.getVoices().filter(v => /^en/i.test(v.lang));
+  voicePick.innerHTML = "";
+  // Prefer a high-quality English voice (Google, Microsoft Natural, Apple).
+  const preferred = voices.find(v => /Google US English/i.test(v.name))
+                || voices.find(v => /Microsoft.*(Aria|Guy|Jenny|Davis).*Online/i.test(v.name))
+                || voices.find(v => /Microsoft.*(Aria|Guy|Jenny|Davis)/i.test(v.name))
+                || voices.find(v => /Samantha|Alex|Daniel/i.test(v.name))
+                || voices.find(v => /en-US/i.test(v.lang))
+                || voices[0];
+  voices.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v.name;
+    o.textContent = v.name + " (" + v.lang + ")";
+    if (preferred && v.name === preferred.name) o.selected = true;
+    voicePick.appendChild(o);
+  });
+  chosenVoice = preferred || null;
+}
+if (tts) {
+  loadVoices();
+  // Voices populate asynchronously in some browsers (notably Chrome).
+  tts.onvoiceschanged = loadVoices;
+  voicePick.addEventListener("change", () => {
+    const v = tts.getVoices().find(x => x.name === voicePick.value);
+    if (v) chosenVoice = v;
+    cancelSpeech();
+  });
+}
+
+function cancelSpeech() {
+  if (tts) tts.cancel();
+  lastSpokenCaption = "";
+}
+
+function speak(text) {
+  if (!tts || !voiceEnabled || !text) return;
+  // Cancel anything currently in flight so we never stack utterances.
+  tts.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  if (chosenVoice) u.voice = chosenVoice;
+  u.rate  = Math.min(2.5, Math.max(0.5, 0.98 * speed)); // match player speed
+  u.pitch = 1.0;
+  u.volume = 1.0;
+  u.lang = (chosenVoice && chosenVoice.lang) || "en-US";
+  tts.speak(u);
+}
+
+voiceBtn.addEventListener("click", () => {
+  voiceEnabled = !voiceEnabled;
+  voiceBtn.textContent = voiceEnabled ? "🔊 Voice on" : "🔇 Voice off";
+  if (!voiceEnabled) cancelSpeech();
+});
+
+function setActiveScene(sceneId) {
+  document.querySelectorAll(".scene").forEach(el => {
+    el.classList.toggle("active", Number(el.dataset.scene) === sceneId);
+  });
+  document.querySelectorAll(".chip").forEach(el => {
+    el.classList.toggle("current", Number(el.dataset.scene) === sceneId);
+  });
+}
+
+function currentScene(t) {
+  for (const s of SCENES) {
+    if (t >= s.start && t < s.end) return s;
+  }
+  return SCENES[SCENES.length - 1];
+}
+
+function currentCaption(scene, t) {
+  let line = scene.captions[0]?.text || "";
+  for (const c of scene.captions) {
+    if (t >= scene.start + (c.at - scene.start)) line = c.text;
+    else break;
+  }
+  // Recompute more robustly: pick the last caption whose absolute time has been reached
+  let best = "";
+  for (const c of scene.captions) {
+    if (t >= c.at) best = c.text;
+  }
+  return best;
+}
+
+function render() {
+  const scene = currentScene(elapsed);
+  setActiveScene(scene.id);
+  const newCaption = currentCaption(scene, elapsed);
+  if (newCaption !== captionText.textContent) {
+    captionText.textContent = newCaption;
+    // Only speak when the caption actually changes AND the timeline is playing.
+    // This avoids speaking when the user is just scrubbing.
+    if (playing && newCaption && newCaption !== lastSpokenCaption) {
+      lastSpokenCaption = newCaption;
+      speak(newCaption);
+    }
+  }
+  progressFill.style.width = (elapsed / TOTAL * 100).toFixed(2) + "%";
+  timecode.textContent = fmt(elapsed) + " / " + fmt(TOTAL);
+
+  // Scene-2 latency counter occasional pulse
+  const lat2 = document.getElementById("lat2");
+  if (lat2 && scene.id === 2 && Math.floor(elapsed) % 5 === 0) {
+    lat2.classList.remove("latency-flash");
+    void lat2.offsetWidth;
+    lat2.classList.add("latency-flash");
+  }
+  // Scene-6 AEM rate climbs
+  const aemRate = document.getElementById("aemRate");
+  if (aemRate && scene.id === 6) {
+    const within = elapsed - scene.start; // 0..33
+    const v = Math.round(120 + within * within * 18);
+    aemRate.textContent = v.toLocaleString();
+  }
+}
+
+function tick(ts) {
+  if (!playing) return;
+  if (!lastTick) lastTick = ts;
+  const dt = (ts - lastTick) / 1000 * speed;
+  lastTick = ts;
+  elapsed += dt;
+  if (elapsed >= TOTAL) {
+    elapsed = TOTAL;
+    playing = false;
+    playBtn.textContent = "▶ Replay";
+  }
+  render();
+  if (playing) requestAnimationFrame(tick);
+}
+
+function play() {
+  if (elapsed >= TOTAL) {
+    elapsed = 0;
+    lastSpokenCaption = "";
+  }
+  playing = true;
+  lastTick = 0;
+  playBtn.textContent = "❚❚ Pause";
+  // Speak the caption we land on (in case render() runs before the next change).
+  if (voiceEnabled) {
+    const scene = currentScene(elapsed);
+    const c = currentCaption(scene, elapsed);
+    if (c && c !== lastSpokenCaption) {
+      lastSpokenCaption = c;
+      speak(c);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+function pause() {
+  playing = false;
+  playBtn.textContent = "▶ Play";
+  cancelSpeech();
+}
+function seek(t) {
+  cancelSpeech();
+  elapsed = Math.max(0, Math.min(TOTAL, t));
+  render();
+}
+
+playBtn.addEventListener("click", () => { playing ? pause() : play(); });
+restartBtn.addEventListener("click", () => {
+  cancelSpeech();
+  elapsed = 0;
+  render();
+  if (!playing) play();
+});
+speedBtn.addEventListener("click", () => {
+  speed = (speed === 1) ? 2 : (speed === 2 ? 0.5 : 1);
+  speedBtn.textContent = speed + "×";
+  // Re-speak the current caption at the new rate so audio matches the new pace.
+  if (playing && voiceEnabled) {
+    const scene = currentScene(elapsed);
+    const c = currentCaption(scene, elapsed);
+    if (c) speak(c);
+  }
+});
+
+// initial paint
+setActiveScene(1);
+render();
+</script>
+</body>
+</html>
